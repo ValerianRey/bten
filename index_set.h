@@ -15,6 +15,7 @@ private:
     std::array<size_t, NDIM> size;
 public:
     IndexBox(const std::array<size_t, NDIM>& size) : size(size) {}
+    const std::array<size_t, NDIM>& shape() const { return size; }
     virtual bool contains(const std::array<size_t, NDIM>& index) override {
         for (unsigned int i = 0; i < index.size(); i++) {
             if (index[i] < 0 || index[i] >= this->size[i]) {
