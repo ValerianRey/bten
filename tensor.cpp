@@ -1,7 +1,7 @@
 #include <iostream>
 #include "tensor.h"
 
-float Physical::operator()(int index) {
+float Physical::operator()(size_t index) {
     return this->values[index];
 }
 
@@ -16,8 +16,4 @@ void Physical::print() {
         std::cout<<value;
     }
     std::cout<<"])\n";
-}
-
-float Strided2D::operator()(std::pair<int, int> index) {
-    return this->U.get()->operator()(this->f(index));
 }
