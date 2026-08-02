@@ -23,6 +23,7 @@ private:
     std::array<size_t, NDIM> value;
 public:
     static constexpr int ndim = NDIM;
+    static constexpr std::array<size_t, NDIM> size = SIZE;
 
     Multintdex(std::array<size_t, NDIM> value) : value(value) {
         for (int i = 0; i < NDIM; i++) {

@@ -37,16 +37,16 @@ template<typename mV, typename mU>
 requires IsIndex<mV> && IsIndex<mU>
 class PowersetMapping : public IndexMapping<mV, Powerset<mU>> {};
 
-template<int NNZ, int NDIM, std::array<size_t, NDIM> SIZE_V, size_t SIZE_U>
+template<int NDIM, std::array<size_t, NDIM> SIZE_V, size_t SIZE_U>
 class COO : public PowersetMapping<Multintdex<NDIM, SIZE_V>, Intdex<SIZE_U>> {
 private:
-    std::array<std::array<size_t, NDIM>, NNZ> inverse_coords;
+    std::array<std::array<size_t, NDIM>, SIZE_U> inverse_coords;
 public:
-    COO(std::array<std::array<size_t, NDIM>, NNZ> inverse_coords) : inverse_coords(inverse_coords) {}
+    COO(std::array<std::array<size_t, NDIM>, SIZE_U> inverse_coords) : inverse_coords(inverse_coords) {}
 
     virtual Powerset<Intdex<SIZE_U>> operator()(Multintdex<NDIM, SIZE_V> index) override {
         Powerset<Intdex<SIZE_U>> result;
-        for (int j = 0; j < NNZ; j++) {
+        for (size_t j = 0; j < SIZE_U; j++) {
             bool match = true;
             for (int i = 0; i < NDIM; i++) {
                 if (inverse_coords[j][i] != index[i]) {

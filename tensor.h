@@ -59,19 +59,29 @@ public:
     }
 };
 
-// template<typename mV, typename mU>
-// requires IsIndex<mV> && IsIndex<mU>
-// class Sum : public Tensor<mV> {
-// private:
-//     std::shared_ptr<Tensor<mU>> U_ptr;
-//     RELATION_TYPE relation;
+template<typename mV, typename mU>
+requires IsIndex<mV> && IsIndex<mU>
+class Sum : public Tensor<mV> {
+private:
+    std::shared_ptr<Tensor<mU>> U_ptr;
+    std::shared_ptr<PowersetMapping<mV, mU>> mapping;
 
-// public:
-//     virtual float operator()(mV index) override {
-//         std::unordered_set<mU> indices = relation(index);
-//         float result = 0.F;
-//         for (const mU& i : indices) {
-//             result += U_ptr.get()->operator()(i);
-//         }
-//     }
-// };
+public:
+    Sum(std::shared_ptr<Tensor<mU>> U_ptr, std::shared_ptr<PowersetMapping<mV, mU>> mapping)
+        : U_ptr(U_ptr), mapping(mapping) {}
+
+    virtual float operator()(mV index) override {
+        Powerset<mU> indices = mapping.get()->operator()(index);
+        float result = 0.F;
+        for (const mU& i : indices) {
+            result += U_ptr.get()->operator()(i);
+        }
+        return result;
+    }
+
+    void print() {
+        print_utils::print_tensor<mV::ndim>(mV::size, [this](const std::array<size_t, mV::ndim>& index) {
+            return (*this)(index);
+        });
+    }
+};
