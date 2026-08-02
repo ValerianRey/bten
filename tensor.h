@@ -8,8 +8,8 @@
 #include "index.h"
 #include "print_utils.h"
 
-//TODO: enforce mU <= Index.
 template<typename mU>
+requires IsIndex<mU>
 class Tensor {
     /*
      * Abstract class to represent a mapping from an index set to a value set.
@@ -39,10 +39,10 @@ template<int NDIM, std::array<size_t, NDIM> SIZE_V, size_t SIZE_U>
 class Strided : public Tensor<Multintdex<NDIM, SIZE_V>> {
 private:
     std::shared_ptr<Physical<SIZE_U>> U_ptr;
-    Stride<NDIM, SIZE_V, SIZE_U> f;
+    Stride<Multintdex<NDIM, SIZE_V>, Intdex<SIZE_U>> f;
 
 public:
-    Strided(std::shared_ptr<Physical<SIZE_U>> U_ptr, Stride<NDIM, SIZE_V, SIZE_U> stride)
+    Strided(std::shared_ptr<Physical<SIZE_U>> U_ptr, Stride<Multintdex<NDIM, SIZE_V>, Intdex<SIZE_U>> stride)
         : U_ptr(U_ptr), f(stride) {}
     virtual float operator()(Multintdex<NDIM, SIZE_V> index) override {
         return this->U_ptr.get()->operator()(this->f(index));

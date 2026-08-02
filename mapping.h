@@ -3,8 +3,8 @@
 #include <array>
 #include "index.h"
 
-// TODO: enforce mV and mU <= Index.
 template<typename mV, typename mU>
+requires IsIndex<mV> && IsIndex<mU>
 class IndexMapping {
 public:
     virtual ~IndexMapping() = default;
@@ -12,22 +12,23 @@ public:
 };
 
 // TODO: enforce SIZE_U = prod(SIZE_V) with a concept
-template<size_t NDIM, std::array<size_t, NDIM> SIZE_V, size_t SIZE_U>
-class Stride : public IndexMapping<Multintdex<NDIM, SIZE_V>, Intdex<SIZE_U>> {
+template<typename mV, typename mU>
+requires IsMultintdex<mV> && IsIntdex<mU>
+class Stride : public IndexMapping<mV, mU> {
 private:
-    std::array<size_t, NDIM> strides;
+    std::array<size_t, mV::ndim> strides;
 
 public:
-    Stride(std::array<size_t, NDIM> strides) : strides(strides) {}
+    Stride(std::array<size_t, mV::ndim> strides) : strides(strides) {}
 
-    virtual Intdex<SIZE_U> operator()(Multintdex<NDIM, SIZE_V> index) override {
+    virtual mU operator()(mV index) override {
         size_t result = 0;
-        for (size_t i = 0; i < NDIM; i++) {
+        for (size_t i = 0; i < mV::ndim; i++) {
             result += index[i] * strides[i];
         }
         // TODO: note that there could be a way to enforce that check at instanciation time:
         //       we could enforce that the strides are such that the max possible result is less
         //       than SIZE_V.
-        return Intdex<SIZE_U>(result);
+        return mU(result);
     }
 };
