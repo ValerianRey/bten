@@ -72,9 +72,14 @@ struct ProductReduction {
     static float combine(float a, float b) { return a * b; }
 };
 
-struct MaxReduction {
+struct SupReduction {
     static constexpr float neutral = -std::numeric_limits<float>::infinity();
     static float combine(float a, float b) { return std::max(a, b); }
+};
+
+struct InfReduction {
+    static constexpr float neutral = std::numeric_limits<float>::infinity();
+    static float combine(float a, float b) { return std::min(a, b); }
 };
 
 template<typename R>
@@ -117,4 +122,7 @@ template<typename mV, typename mU>
 using Product = ReductionTensor<mV, mU, ProductReduction>;
 
 template<typename mV, typename mU>
-using Max = ReductionTensor<mV, mU, MaxReduction>;
+using Sup = ReductionTensor<mV, mU, SupReduction>;
+
+template<typename mV, typename mU>
+using Inf = ReductionTensor<mV, mU, InfReduction>;

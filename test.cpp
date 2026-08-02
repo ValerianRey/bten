@@ -24,7 +24,7 @@ int main() {
     Strided<2, V_size, 6> V(U_ptr, stride);
     Sum<mW, mU> W(U_ptr, coo);
     Product<mW, mU> X(U_ptr, coo);
-    Max<mW, mU> Y(U_ptr, coo);
+    Sup<mW, mU> Y(U_ptr, coo);
 
     // Printing
     std::cout<<"V:\n";
