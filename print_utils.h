@@ -51,7 +51,7 @@ void print_recursive(const std::array<size_t, NDIM>& shape, std::array<size_t, N
             } else {
                 std::cout << ",\n";
                 if (dim + 2 < static_cast<size_t>(NDIM)) {
-                    std::cout << "\n" << indent;
+                    std::cout << "\n";
                 }
                 std::cout << indent;
             }

@@ -61,3 +61,29 @@ public:
         return result;
     }
 };
+
+
+template<int NDIM>
+constexpr std::array<size_t, NDIM> uniform_size(size_t value) {
+    std::array<size_t, NDIM> result{};
+    for (int i = 0; i < NDIM; i++) {
+        result[i] = value;
+    }
+    return result;
+}
+
+template<int NDIM, size_t SIZE_U>
+class Diagonal : public PowersetMapping<Multintdex<NDIM, uniform_size<NDIM>(SIZE_U)>, Intdex<SIZE_U>> {
+public:
+    virtual Powerset<Intdex<SIZE_U>> operator()(Multintdex<NDIM, uniform_size<NDIM>(SIZE_U)> index) override {
+        Powerset<Intdex<SIZE_U>> result;
+        size_t first = index[0];
+        for (int i = 0; i < NDIM; i++) {
+            if (index[i] != first) {
+                return result;
+            }
+        }
+        result.insert(Intdex<SIZE_U>(first));
+        return result;
+    }
+};
