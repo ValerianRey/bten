@@ -23,11 +23,12 @@ public:
 
 template<int SIZE>
 class Physical : public Tensor<Intdex<SIZE>> {
+    using mU = Intdex<SIZE>;
 private:
     std::vector<float> values;
 public:
     Physical(std::vector<float> values) : values(std::move(values)) {}
-    virtual float operator()(Intdex<SIZE> index) override {return this->values[index.get()];}
+    virtual float operator()(mU index) override {return this->values[index.get()];}
     void print() {
         print_utils::print_tensor<1>({SIZE}, [this](const std::array<size_t, 1>& index) {
             return this->values[index[0]];
@@ -37,15 +38,18 @@ public:
 
 template<int NDIM, std::array<size_t, NDIM> SIZE_V, size_t SIZE_U>
 class Strided : public Tensor<Multintdex<NDIM, SIZE_V>> {
+    using mV = Multintdex<NDIM, SIZE_V>;
+    using mU = Intdex<SIZE_U>;
 private:
     std::shared_ptr<Physical<SIZE_U>> U_ptr;
-    Stride<Multintdex<NDIM, SIZE_V>, Intdex<SIZE_U>> f;
+    Stride<mV, mU> f;
 
 public:
-    Strided(std::shared_ptr<Physical<SIZE_U>> U_ptr, Stride<Multintdex<NDIM, SIZE_V>, Intdex<SIZE_U>> stride)
+    Strided(std::shared_ptr<Physical<SIZE_U>> U_ptr, Stride<mV, mU> stride)
         : U_ptr(U_ptr), f(stride) {}
-    virtual float operator()(Multintdex<NDIM, SIZE_V> index) override {
-        return this->U_ptr.get()->operator()(this->f(index));
+    virtual float operator()(mV index) override {
+        mU i = f(index);
+        return U_ptr.get()->operator()(i);
     }
 
     void print() {
