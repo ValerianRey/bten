@@ -58,3 +58,20 @@ public:
         });
     }
 };
+
+// template<typename mV, typename mU>
+// requires IsIndex<mV> && IsIndex<mU>
+// class Sum : public Tensor<mV> {
+// private:
+//     std::shared_ptr<Tensor<mU>> U_ptr;
+//     RELATION_TYPE relation;
+
+// public:
+//     virtual float operator()(mV index) override {
+//         std::unordered_set<mU> indices = relation(index);
+//         float result = 0.F;
+//         for (const mU& i : indices) {
+//             result += U_ptr.get()->operator()(i);
+//         }
+//     }
+// };
