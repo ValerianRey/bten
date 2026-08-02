@@ -23,12 +23,19 @@ int main() {
     // Tensors
     Strided<2, V_size, 6> V(U_ptr, stride);
     Sum<mW, mU> W(U_ptr, coo);
+    Product<mW, mU> X(U_ptr, coo);
+    Max<mW, mU> Y(U_ptr, coo);
 
     // Printing
     std::cout<<"V:\n";
     V.print();
-    std::cout<<"W:\n";
+    std::cout<<"\nW:\n";
     W.print();
+    std::cout<<"\nX:\n";
+    X.print();
+    std::cout<<"\nY:\n";
+    Y.print();
+
     std::array<size_t, 2> index{2, 1};
     std::cout << "V(" << index[0] << ", " << index[1] << ") = " << V(index) << std::endl;
 

@@ -1,5 +1,8 @@
 #pragma once
 
+#include <algorithm>
+#include <concepts>
+#include <limits>
 #include <memory>
 #include <vector>
 #include <array>
@@ -59,22 +62,43 @@ public:
     }
 };
 
-template<typename mV, typename mU>
-requires IsIndex<mV> && IsIndex<mU>
-class Sum : public Tensor<mV> {
+struct SumReduction {
+    static constexpr float neutral = 0.F;
+    static float combine(float a, float b) { return a + b; }
+};
+
+struct ProductReduction {
+    static constexpr float neutral = 1.F;
+    static float combine(float a, float b) { return a * b; }
+};
+
+struct MaxReduction {
+    static constexpr float neutral = -std::numeric_limits<float>::infinity();
+    static float combine(float a, float b) { return std::max(a, b); }
+};
+
+template<typename R>
+concept IsReduction = requires(float a, float b) {
+    { R::neutral } -> std::convertible_to<float>;
+    { R::combine(a, b) } -> std::convertible_to<float>;
+};
+
+template<typename mV, typename mU, typename R>
+requires IsIndex<mV> && IsIndex<mU> && IsReduction<R>
+class ReductionTensor : public Tensor<mV> {
 private:
     std::shared_ptr<Tensor<mU>> U_ptr;
     std::shared_ptr<PowersetMapping<mV, mU>> mapping;
 
 public:
-    Sum(std::shared_ptr<Tensor<mU>> U_ptr, std::shared_ptr<PowersetMapping<mV, mU>> mapping)
+    ReductionTensor(std::shared_ptr<Tensor<mU>> U_ptr, std::shared_ptr<PowersetMapping<mV, mU>> mapping)
         : U_ptr(U_ptr), mapping(mapping) {}
 
     virtual float operator()(mV index) override {
         Powerset<mU> indices = mapping.get()->operator()(index);
-        float result = 0.F;
+        float result = R::neutral;
         for (const mU& i : indices) {
-            result += U_ptr.get()->operator()(i);
+            result = R::combine(result, U_ptr.get()->operator()(i));
         }
         return result;
     }
@@ -85,3 +109,12 @@ public:
         });
     }
 };
+
+template<typename mV, typename mU>
+using Sum = ReductionTensor<mV, mU, SumReduction>;
+
+template<typename mV, typename mU>
+using Product = ReductionTensor<mV, mU, ProductReduction>;
+
+template<typename mV, typename mU>
+using Max = ReductionTensor<mV, mU, MaxReduction>;
