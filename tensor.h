@@ -52,7 +52,7 @@ public:
         : U_ptr(U_ptr), f(stride) {}
     virtual float operator()(mV index) override {
         mU i = f(index);
-        return U_ptr.get()->operator()(i);
+        return U_ptr->operator()(i);
     }
 
     void print() {
@@ -103,7 +103,7 @@ public:
         Powerset<mU> indices = mapping.get()->operator()(index);
         float result = R::neutral;
         for (const mU& i : indices) {
-            result = R::combine(result, U_ptr.get()->operator()(i));
+            result = R::combine(result, U_ptr->operator()(i));
         }
         return result;
     }
