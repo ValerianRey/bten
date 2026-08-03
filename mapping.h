@@ -37,6 +37,15 @@ template<typename mV, typename mU>
 requires IsIndex<mV> && IsIndex<mU>
 class PowersetMapping : public IndexMapping<mV, Powerset<mU>> {};
 
+template<typename mV, typename mU>
+requires IsIndex<mV> && IsIndex<mU>
+class EmptyMapping : public PowersetMapping<mV, mU> {
+public:
+    virtual Powerset<mU> operator()(mV) override {
+        return Powerset<mU>();
+    }
+};
+
 template<int NDIM, std::array<size_t, NDIM> SIZE_V, size_t SIZE_U>
 class COO : public PowersetMapping<Multintdex<NDIM, SIZE_V>, Intdex<SIZE_U>> {
 private:
