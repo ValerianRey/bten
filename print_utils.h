@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <iomanip>
-#include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -35,38 +34,40 @@ size_t max_width(const std::vector<size_t>& shape, std::vector<size_t>& index,
 }
 
 template<typename Accessor>
-void print_recursive(const std::vector<size_t>& shape, std::vector<size_t>& index,
-                      size_t dim, const std::string& indent, size_t width, const Accessor& accessor) {
-    std::cout << "[";
+void format_recursive(std::ostringstream& out, const std::vector<size_t>& shape, std::vector<size_t>& index,
+                       size_t dim, const std::string& indent, size_t width, const Accessor& accessor) {
+    out << "[";
     for (size_t i = 0; i < shape[dim]; i++) {
         index[dim] = i;
         if (dim == shape.size() - 1) {
-            std::cout << std::right << std::setw(static_cast<int>(width)) << format_value(accessor(index));
+            out << std::right << std::setw(static_cast<int>(width)) << format_value(accessor(index));
         } else {
-            print_recursive(shape, index, dim + 1, indent + " ", width, accessor);
+            format_recursive(out, shape, index, dim + 1, indent + " ", width, accessor);
         }
         if (i + 1 < shape[dim]) {
             if (dim == shape.size() - 1) {
-                std::cout << ", ";
+                out << ", ";
             } else {
-                std::cout << ",\n";
+                out << ",\n";
                 if (dim + 2 < shape.size()) {
-                    std::cout << "\n";
+                    out << "\n";
                 }
-                std::cout << indent;
+                out << indent;
             }
         }
     }
-    std::cout << "]";
+    out << "]";
 }
 
 template<typename Accessor>
-void print_tensor(const std::vector<size_t>& shape, const Accessor& accessor) {
+std::string format_tensor(const std::vector<size_t>& shape, const Accessor& accessor) {
     std::vector<size_t> index(shape.size(), 0);
     size_t width = max_width(shape, index, 0, accessor);
-    std::cout << "tensor(";
-    print_recursive(shape, index, 0, std::string(8, ' '), width, accessor);
-    std::cout << ")\n";
+    std::ostringstream out;
+    out << "tensor(";
+    format_recursive(out, shape, index, 0, std::string(8, ' '), width, accessor);
+    out << ")";
+    return out.str();
 }
 
 }

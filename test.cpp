@@ -1,4 +1,4 @@
-#include <iostream>
+#include <print>
 #include <vector>
 #include "tensor.h"
 #include "mapping.h"
@@ -27,23 +27,16 @@ int main() {
     Sum<Multintdex, Intdex> identity(inner_ptr, diagonalize, {6, 6});
 
     // Printing
-    std::cout<<"strided:\n";
-    strided.print();
-    std::cout<<"\nsparse_coo:\n";
-    sparse_coo.print();
-    std::cout<<"\nprod_coo:\n";
-    prod_coo.print();
-    std::cout<<"\nsup_coo:\n";
-    sup_coo.print();
-    std::cout<<"\ndiag2d:\n";
-    diag2d.print();
-    std::cout<<"\ndiag3d:\n";
-    diag3d.print();
-    std::cout<<"\nidentity:\n";
-    identity.print();
+    std::println("strided:\n{}", strided.str());
+    std::println("\nsparse_coo:\n{}", sparse_coo.str());
+    std::println("\nprod_coo:\n{}", prod_coo.str());
+    std::println("\nsup_coo:\n{}", sup_coo.str());
+    std::println("\ndiag2d:\n{}", diag2d.str());
+    std::println("\ndiag3d:\n{}", diag3d.str());
+    std::println("\nidentity:\n{}", identity.str());
 
     std::vector<size_t> index{2, 1};
-    std::cout << "strided(" << index[0] << ", " << index[1] << ") = " << strided(index) << std::endl;
+    std::println("strided({}, {}) = {}", index[0], index[1], strided(index));
 
     return 0;
 }

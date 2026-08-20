@@ -4,6 +4,7 @@
 #include <concepts>
 #include <limits>
 #include <memory>
+#include <string>
 #include <vector>
 #include "mapping.h"
 #include "index.h"
@@ -28,8 +29,8 @@ private:
 public:
     Physical(std::vector<float> values) : values(std::move(values)) {}
     virtual float operator()(Intdex index) override { return this->values.at(index.get()); }
-    void print() {
-        print_utils::print_tensor({values.size()}, [this](const std::vector<size_t>& index) {
+    std::string str() {
+        return print_utils::format_tensor({values.size()}, [this](const std::vector<size_t>& index) {
             return this->values[index[0]];
         });
     }
@@ -49,8 +50,8 @@ public:
         return U_ptr->operator()(i);
     }
 
-    void print() {
-        print_utils::print_tensor(shape, [this](const std::vector<size_t>& index) {
+    std::string str() {
+        return print_utils::format_tensor(shape, [this](const std::vector<size_t>& index) {
             return (*this)(Multintdex(index));
         });
     }
@@ -104,8 +105,8 @@ public:
         return result;
     }
 
-    void print() {
-        print_utils::print_tensor(shape, [this](const std::vector<size_t>& index) {
+    std::string str() {
+        return print_utils::format_tensor(shape, [this](const std::vector<size_t>& index) {
             return (*this)(mV(index));
         });
     }
