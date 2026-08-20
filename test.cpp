@@ -5,9 +5,6 @@
 
 
 int main() {
-    // Data
-    std::vector<float> data{1.F, 2.F, 3.F, 4.F, 5.F, 6.F};
-
     // Mappings
     Stride stride({1, 3});
     auto coo = std::make_shared<COO>(std::vector<std::vector<size_t>>{{0, 0}, {0, 3}, {4, 2}, {5, 4}, {1, 3}, {2, 0}});
@@ -15,7 +12,7 @@ int main() {
     auto empty_map = std::make_shared<EmptyMapping<Intdex, Intdex>>();
 
     // Tensors
-    auto physical = std::make_shared<Physical>(data);
+    auto physical = std::make_shared<Physical>(std::vector<float>{1.F, 2.F, 3.F, 4.F, 5.F, 6.F});
     Strided strided(physical, stride, {3, 2});
     Sum<Multintdex, Intdex> sparse_coo(physical, coo, {6, 5});
     Product<Multintdex, Intdex> prod_coo(physical, coo, {6, 5});

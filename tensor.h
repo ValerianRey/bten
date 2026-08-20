@@ -27,7 +27,7 @@ class Physical : public Tensor<Intdex> {
 private:
     std::vector<float> values;
 public:
-    Physical(std::vector<float> values) : values(std::move(values)) {}
+    Physical(std::vector<float>&& values) : values(std::move(values)) {}
     virtual float operator()(Intdex index) override { return this->values.at(index.get()); }
     std::string str() {
         return print_utils::format_tensor({values.size()}, [this](const std::vector<size_t>& index) {
