@@ -1,6 +1,6 @@
 #pragma once
 
-#include <array>
+#include <vector>
 #include "index.h"
 
 template<typename mV, typename mU>
@@ -11,25 +11,19 @@ public:
     virtual mU operator()(mV index) = 0;
 };
 
-// TODO: enforce SIZE_U = prod(SIZE_V) with a concept
-template<typename mV, typename mU>
-requires IsMultintdex<mV> && IsIntdex<mU>
-class Stride : public IndexMapping<mV, mU> {
+class Stride : public IndexMapping<Multintdex, Intdex> {
 private:
-    std::array<size_t, mV::ndim> strides;
+    std::vector<size_t> strides;
 
 public:
-    Stride(std::array<size_t, mV::ndim> strides) : strides(strides) {}
+    Stride(std::vector<size_t> strides) : strides(std::move(strides)) {}
 
-    virtual mU operator()(mV index) override {
+    virtual Intdex operator()(Multintdex index) override {
         size_t result = 0;
-        for (size_t i = 0; i < mV::ndim; i++) {
+        for (size_t i = 0; i < strides.size(); i++) {
             result += index[i] * strides[i];
         }
-        // TODO: note that there could be a way to enforce that check at instanciation time:
-        //       we could enforce that the strides are such that the max possible result is less
-        //       than SIZE_V.
-        return mU(result);
+        return Intdex(result);
     }
 };
 
@@ -46,53 +40,41 @@ public:
     }
 };
 
-template<int NDIM, std::array<size_t, NDIM> SIZE_V, size_t SIZE_U>
-class COO : public PowersetMapping<Multintdex<NDIM, SIZE_V>, Intdex<SIZE_U>> {
+class COO : public PowersetMapping<Multintdex, Intdex> {
 private:
-    std::array<std::array<size_t, NDIM>, SIZE_U> inverse_coords;
+    std::vector<std::vector<size_t>> inverse_coords;
 public:
-    COO(std::array<std::array<size_t, NDIM>, SIZE_U> inverse_coords) : inverse_coords(inverse_coords) {}
+    COO(std::vector<std::vector<size_t>> inverse_coords) : inverse_coords(std::move(inverse_coords)) {}
 
-    virtual Powerset<Intdex<SIZE_U>> operator()(Multintdex<NDIM, SIZE_V> index) override {
-        Powerset<Intdex<SIZE_U>> result;
-        for (size_t j = 0; j < SIZE_U; j++) {
+    virtual Powerset<Intdex> operator()(Multintdex index) override {
+        Powerset<Intdex> result;
+        for (size_t j = 0; j < inverse_coords.size(); j++) {
             bool match = true;
-            for (int i = 0; i < NDIM; i++) {
+            for (size_t i = 0; i < inverse_coords[j].size(); i++) {
                 if (inverse_coords[j][i] != index[i]) {
                     match = false;
                     break;
                 }
             }
             if (match) {
-                result.insert(Intdex<SIZE_U>(j));
+                result.insert(Intdex(j));
             }
         }
         return result;
     }
 };
 
-
-template<int NDIM>
-constexpr std::array<size_t, NDIM> uniform_size(size_t value) {
-    std::array<size_t, NDIM> result{};
-    for (int i = 0; i < NDIM; i++) {
-        result[i] = value;
-    }
-    return result;
-}
-
-template<int NDIM, size_t SIZE_U>
-class Diagonal : public PowersetMapping<Multintdex<NDIM, uniform_size<NDIM>(SIZE_U)>, Intdex<SIZE_U>> {
+class Diagonal : public PowersetMapping<Multintdex, Intdex> {
 public:
-    virtual Powerset<Intdex<SIZE_U>> operator()(Multintdex<NDIM, uniform_size<NDIM>(SIZE_U)> index) override {
-        Powerset<Intdex<SIZE_U>> result;
+    virtual Powerset<Intdex> operator()(Multintdex index) override {
+        Powerset<Intdex> result;
         size_t first = index[0];
-        for (int i = 0; i < NDIM; i++) {
+        for (size_t i = 0; i < index.ndim(); i++) {
             if (index[i] != first) {
                 return result;
             }
         }
-        result.insert(Intdex<SIZE_U>(first));
+        result.insert(Intdex(first));
         return result;
     }
 };

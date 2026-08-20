@@ -5,8 +5,6 @@
 #include <limits>
 #include <memory>
 #include <vector>
-#include <array>
-#include <stdexcept>
 #include "mapping.h"
 #include "index.h"
 #include "print_utils.h"
@@ -16,7 +14,7 @@ requires IsIndex<mU>
 class Tensor {
     /*
      * Abstract class to represent a mapping from an index set to a value set.
-     * The value set is fixed to the float numbers for now, for simplicity. 
+     * The value set is fixed to the float numbers for now, for simplicity.
      */
 private:
 public:
@@ -24,40 +22,36 @@ public:
     virtual float operator()(mU index) = 0;
 };
 
-template<int SIZE>
-class Physical : public Tensor<Intdex<SIZE>> {
-    using mU = Intdex<SIZE>;
+class Physical : public Tensor<Intdex> {
 private:
     std::vector<float> values;
 public:
     Physical(std::vector<float> values) : values(std::move(values)) {}
-    virtual float operator()(mU index) override {return this->values[index.get()];}
+    virtual float operator()(Intdex index) override { return this->values.at(index.get()); }
     void print() {
-        print_utils::print_tensor<1>({SIZE}, [this](const std::array<size_t, 1>& index) {
+        print_utils::print_tensor({values.size()}, [this](const std::vector<size_t>& index) {
             return this->values[index[0]];
         });
     }
 };
 
-template<int NDIM, std::array<size_t, NDIM> SIZE_V, size_t SIZE_U>
-class Strided : public Tensor<Multintdex<NDIM, SIZE_V>> {
-    using mV = Multintdex<NDIM, SIZE_V>;
-    using mU = Intdex<SIZE_U>;
+class Strided : public Tensor<Multintdex> {
 private:
-    std::shared_ptr<Physical<SIZE_U>> U_ptr;
-    Stride<mV, mU> f;
+    std::shared_ptr<Physical> U_ptr;
+    Stride f;
+    std::vector<size_t> shape;
 
 public:
-    Strided(std::shared_ptr<Physical<SIZE_U>> U_ptr, Stride<mV, mU> stride)
-        : U_ptr(U_ptr), f(stride) {}
-    virtual float operator()(mV index) override {
-        mU i = f(index);
+    Strided(std::shared_ptr<Physical> U_ptr, Stride stride, std::vector<size_t> shape)
+        : U_ptr(std::move(U_ptr)), f(std::move(stride)), shape(std::move(shape)) {}
+    virtual float operator()(Multintdex index) override {
+        Intdex i = f(index);
         return U_ptr->operator()(i);
     }
 
     void print() {
-        print_utils::print_tensor<NDIM>(SIZE_V, [this](const std::array<size_t, NDIM>& index) {
-            return (*this)(index);
+        print_utils::print_tensor(shape, [this](const std::vector<size_t>& index) {
+            return (*this)(Multintdex(index));
         });
     }
 };
@@ -94,13 +88,15 @@ class ReductionTensor : public Tensor<mV> {
 private:
     std::shared_ptr<Tensor<mU>> U_ptr;
     std::shared_ptr<PowersetMapping<mV, mU>> mapping;
+    std::vector<size_t> shape;
 
 public:
-    ReductionTensor(std::shared_ptr<Tensor<mU>> U_ptr, std::shared_ptr<PowersetMapping<mV, mU>> mapping)
-        : U_ptr(U_ptr), mapping(mapping) {}
+    ReductionTensor(std::shared_ptr<Tensor<mU>> U_ptr, std::shared_ptr<PowersetMapping<mV, mU>> mapping,
+                     std::vector<size_t> shape)
+        : U_ptr(std::move(U_ptr)), mapping(std::move(mapping)), shape(std::move(shape)) {}
 
     virtual float operator()(mV index) override {
-        Powerset<mU> indices = mapping.get()->operator()(index);
+        Powerset<mU> indices = mapping->operator()(index);
         float result = R::neutral;
         for (const mU& i : indices) {
             result = R::combine(result, U_ptr->operator()(i));
@@ -109,8 +105,8 @@ public:
     }
 
     void print() {
-        print_utils::print_tensor<mV::ndim>(mV::size, [this](const std::array<size_t, mV::ndim>& index) {
-            return (*this)(index);
+        print_utils::print_tensor(shape, [this](const std::vector<size_t>& index) {
+            return (*this)(mV(index));
         });
     }
 };
