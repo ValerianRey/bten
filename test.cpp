@@ -19,9 +19,9 @@ int main() {
     Sup<Multintdex, Intdex> sup_coo(physical, coo, {6, 5});
     Sum<Multintdex, Intdex> diag2d(physical, diagonalize, {6, 6});
     Sum<Multintdex, Intdex> diag3d(physical, diagonalize, {6, 6, 6});
-    auto empty_ptr = std::make_shared<Physical>(std::vector<float>{});
-    auto inner_ptr = std::make_shared<Product<Intdex, Intdex>>(empty_ptr, empty_map, std::vector<size_t>{6});
-    Sum<Multintdex, Intdex> identity(inner_ptr, diagonalize, {6, 6});
+    auto empty = std::make_shared<Physical>(std::vector<float>{});
+    auto ones = std::make_shared<Product<Intdex, Intdex>>(empty, empty_map, std::vector<size_t>{6});
+    Sum<Multintdex, Intdex> identity(ones, diagonalize, {6, 6});
 
     // Printing
     std::println("strided:\n{}", strided.str());

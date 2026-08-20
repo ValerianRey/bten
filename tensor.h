@@ -38,16 +38,16 @@ public:
 
 class Strided : public Tensor<Multintdex> {
 private:
-    std::shared_ptr<Physical> U_ptr;
+    std::shared_ptr<Physical> U;
     Stride f;
     std::vector<size_t> shape;
 
 public:
-    Strided(std::shared_ptr<Physical> U_ptr, Stride stride, std::vector<size_t> shape)
-        : U_ptr(std::move(U_ptr)), f(std::move(stride)), shape(std::move(shape)) {}
+    Strided(std::shared_ptr<Physical> U, Stride stride, std::vector<size_t> shape)
+        : U(std::move(U)), f(std::move(stride)), shape(std::move(shape)) {}
     virtual float operator()(Multintdex index) override {
         Intdex i = f(index);
-        return U_ptr->operator()(i);
+        return U->operator()(i);
     }
 
     std::string str() {
@@ -87,20 +87,20 @@ template<typename mV, typename mU, typename R>
 requires IsIndex<mV> && IsIndex<mU> && IsReduction<R>
 class ReductionTensor : public Tensor<mV> {
 private:
-    std::shared_ptr<Tensor<mU>> U_ptr;
+    std::shared_ptr<Tensor<mU>> U;
     std::shared_ptr<PowersetMapping<mV, mU>> mapping;
     std::vector<size_t> shape;
 
 public:
-    ReductionTensor(std::shared_ptr<Tensor<mU>> U_ptr, std::shared_ptr<PowersetMapping<mV, mU>> mapping,
+    ReductionTensor(std::shared_ptr<Tensor<mU>> U, std::shared_ptr<PowersetMapping<mV, mU>> mapping,
                      std::vector<size_t> shape)
-        : U_ptr(std::move(U_ptr)), mapping(std::move(mapping)), shape(std::move(shape)) {}
+        : U(std::move(U)), mapping(std::move(mapping)), shape(std::move(shape)) {}
 
     virtual float operator()(mV index) override {
         Powerset<mU> indices = mapping->operator()(index);
         float result = R::neutral;
         for (const mU& i : indices) {
-            result = R::combine(result, U_ptr->operator()(i));
+            result = R::combine(result, U->operator()(i));
         }
         return result;
     }
