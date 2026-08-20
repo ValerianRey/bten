@@ -7,13 +7,17 @@
 int main() {
     // Mappings
     Stride stride({1, 3});
+    Stride repeat({0, 1});
     auto coo = std::make_shared<COO>(std::vector<std::vector<size_t>>{{0, 0}, {0, 3}, {4, 2}, {5, 4}, {1, 3}, {2, 0}});
+    auto coo_vector = std::make_shared<COO>(std::vector<std::vector<size_t>>{{0}, {4}, {5}, {1}, {10}, {12}});
     auto diagonalize = std::make_shared<Diagonal>();
     auto empty_map = std::make_shared<EmptyMapping<Intdex, Intdex>>();
 
     // Tensors
     auto physical = std::make_shared<Physical>(std::vector<float>{1.F, 2.F, 3.F, 4.F, 5.F, 6.F});
     Strided strided(physical, stride, {3, 2});
+    auto sparse_coo_vector = std::make_shared<Sum<Multintdex, Intdex>>(physical, coo_vector, std::vector<size_t>{13});
+    Strided repeated_sparse(std::make_shared<Intdexed>(sparse_coo_vector), repeat, {10, 13});
     Sum<Multintdex, Intdex> sparse_coo(physical, coo, {6, 5});
     Product<Multintdex, Intdex> prod_coo(physical, coo, {6, 5});
     Sup<Multintdex, Intdex> sup_coo(physical, coo, {6, 5});
@@ -26,6 +30,8 @@ int main() {
     // Printing
     std::println("strided:\n{}", strided.str());
     std::println("\nsparse_coo:\n{}", sparse_coo.str());
+    std::println("\nsparse_coo_vector:\n{}", sparse_coo_vector->str());
+    std::println("\nrepeated_sparse:\n{}", repeated_sparse.str());
     std::println("\nprod_coo:\n{}", prod_coo.str());
     std::println("\nsup_coo:\n{}", sup_coo.str());
     std::println("\ndiag2d:\n{}", diag2d.str());

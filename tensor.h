@@ -23,7 +23,9 @@ public:
     virtual float operator()(mU index) = 0;
 };
 
-class Physical : public Tensor<Intdex> {
+using Vector = Tensor<Intdex>;
+
+class Physical : public Vector {
 private:
     std::vector<float> values;
 public:
@@ -38,12 +40,12 @@ public:
 
 class Strided : public Tensor<Multintdex> {
 private:
-    std::shared_ptr<Physical> U;
+    std::shared_ptr<Vector> U;
     Stride f;
     std::vector<size_t> shape;
 
 public:
-    Strided(std::shared_ptr<Physical> U, Stride stride, std::vector<size_t> shape)
+    Strided(std::shared_ptr<Vector> U, Stride stride, std::vector<size_t> shape)
         : U(std::move(U)), f(std::move(stride)), shape(std::move(shape)) {}
     virtual float operator()(Multintdex index) override {
         Intdex i = f(index);
@@ -54,6 +56,17 @@ public:
         return print_utils::format_tensor(shape, [this](const std::vector<size_t>& index) {
             return (*this)(Multintdex(index));
         });
+    }
+};
+
+class Intdexed : public Vector {
+    // Wrapper around a 1D Multintdex tensor making it a Intdex Tensor.
+private:
+    std::shared_ptr<Tensor<Multintdex>> U;
+public:
+    Intdexed(std::shared_ptr<Tensor<Multintdex>> U) : U(std::move(U)) {}
+    virtual float operator()(Intdex index) override {
+        return U->operator()(Multintdex({index.get()}));
     }
 };
 
